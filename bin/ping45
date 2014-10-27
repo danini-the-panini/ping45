@@ -1,0 +1,23 @@
+!#/usr/bin/env ruby
+
+require 'json'
+require 'httparty'
+
+value = `nmap -sn 10.0.12.0/24 | grep MAC`
+
+data = {}
+
+data[:computers] =
+  value.each_line.map do |line|
+    line.split[2]
+  end
+
+puts data.to_json
+
+response = HTTParty.post('http://localhost:3000/ping', body: data)
+
+unless response.success?
+  p response
+  exit 1
+end
+
