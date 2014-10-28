@@ -1,23 +1,46 @@
-!#/usr/bin/env ruby
+#!/usr/bin/env ruby
 
 require 'json'
 require 'httparty'
 
-value = `nmap -sn 10.0.12.0/24 | grep MAC`
+command = ARGV[0] || 'register'
 
-data = {}
+if command == 'register'
+  username =  ARGV[1] || `whoami`.chomp
+  mac_address = ARGV[2] || `networksetup -getmacaddress Wi-Fi`.split[2]
 
-data[:computers] =
-  value.each_line.map do |line|
-    line.split[2]
+  data = {
+    user: username,
+    mac_address: mac_address
+  }
+
+  response = HTTParty.post('http://localhost:3000/computers', body: data)
+
+  unless response.success?
+    puts "Nope!"
+    exit 1
+  else
+    puts "Successfully registered #{mac_address} under the name #{username}."
   end
+elsif command == 'sniff'
+  nmap = `nmap -sn 10.0.12.0/24 | grep MAC`
 
-puts data.to_json
+  data = {}
 
-response = HTTParty.post('http://localhost:3000/ping', body: data)
+  data[:computers] =
+    nmap.each_line.map do |line|
+      line.split[2]
+    end
 
-unless response.success?
-  p response
-  exit 1
+  puts data.to_json
+
+  response = HTTParty.post('http://localhost:3000/ping', body: data)
+
+  unless response.success?
+    puts "Nope!"
+    exit 1
+  end
+else
+  puts "Unknown command: #{command}"
 end
 
