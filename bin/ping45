@@ -5,7 +5,7 @@ require 'httparty'
 
 command = ARGV[0] || 'register'
 
-HOST = 'localhost:3000'
+HOST = 'ping45.herokuapp.com'
 
 if command == 'register'
   username =  ARGV[1] || `whoami`.chomp
@@ -26,8 +26,9 @@ if command == 'register'
   end
 elsif command == 'sniff'
   IP_ADDRESS = '10.0.12.0'
+  SUBNET = '24'
 
-  nmap = `nmap -sn #{IP_ADDRESS}/24 | grep MAC`
+  nmap = `nmap -sn #{IP_ADDRESS}/#{SUBNET} | grep MAC`
 
   data = {}
 
