@@ -5,6 +5,8 @@ require 'httparty'
 
 command = ARGV[0] || 'register'
 
+HOST = 'localhost:3000'
+
 if command == 'register'
   username =  ARGV[1] || `whoami`.chomp
   mac_address = ARGV[2] || `networksetup -getmacaddress Wi-Fi`.split[2]
@@ -14,7 +16,7 @@ if command == 'register'
     mac_address: mac_address
   }
 
-  response = HTTParty.post('http://localhost:3000/computers', body: data)
+  response = HTTParty.post("http://#{HOST}/computers", body: data)
 
   unless response.success?
     puts "Nope!"
@@ -23,7 +25,9 @@ if command == 'register'
     puts "Successfully registered #{mac_address} under the name #{username}."
   end
 elsif command == 'sniff'
-  nmap = `nmap -sn 10.0.12.0/24 | grep MAC`
+  IP_ADDRESS = '10.0.12.0'
+
+  nmap = `nmap -sn #{IP_ADDRESS}/24 | grep MAC`
 
   data = {}
 
@@ -34,7 +38,7 @@ elsif command == 'sniff'
 
   puts data.to_json
 
-  response = HTTParty.post('http://localhost:3000/ping', body: data)
+  response = HTTParty.post("http://#{HOST}/ping", body: data)
 
   unless response.success?
     puts "Nope!"
